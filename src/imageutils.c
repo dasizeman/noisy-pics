@@ -5,7 +5,7 @@
  *      Author: lou, most most methods implemented by Dave
  */
 
-#include "hw4.h"
+#include "imageutils.h"
 
 /**
  * Loads an image (stored as an IplImage struct) for each
