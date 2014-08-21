@@ -8,8 +8,9 @@ int main(int argc, char** argv)
     IplImage** images = loadImages(1, filenames);
     IplImage* source = images[0];
 
-    int blockcolumns = atoi(argv[1]);
-    int blockrows = atoi(argv[2]);
+    int blockcolumns = atoi(argv[2]);
+    int blockrows = atoi(argv[3]);
+   // printf("%d,%d\n", blockcolumns, blockrows);
 
    struct imageNoteMap map;
    map.light_max = 0;
@@ -18,20 +19,26 @@ int main(int argc, char** argv)
    
    int numblocks = blockcolumns*blockrows;
    CvScalar* colors = process_image(source,blockcolumns, blockrows, &map);
-   int scale = determine_scale(source, &map);
-   int* notes = generate_notes(colors, &map, numblocks);
-
+  int scale = determine_scale(source, &map);
+  int* notes = generate_notes(colors, &map, numblocks);
+   
    int i;
    for (i =0; i < numblocks; i++)
    {
-       printf("%d\n", notes[i]);
+      // printf("%f,%f,%f\n", colors[i].val[0], colors[i].val[1], colors[i].val[2]);
+      printf("%d ", notes[i]);
    }
+   printf("\n");
+   
+   play(notes, scale, numblocks);
 }
 
 CvScalar* process_image(IplImage* source, int numColumns, int numRows, struct imageNoteMap* map)
 {
     int numimages = numRows*numColumns;
     CvScalar* res = getAvgColors(getSubImages(source, numColumns, numRows), numimages); 
+
+    printf("Got avg colors\n");
     
     CvScalar blackScalar = CV_RGB(0,0,0);
     CvScalar whiteScalar = CV_RGB(255,255,255);
@@ -87,6 +94,7 @@ void play(int* notes, int scale, int numNotes)
     start_sound();
     for (i = 0; i < numNotes; i++)
     {
+        printf("PLAYING NOTE %d\n", notes[i]);
         if (scale)
             play_cmajor_note(notes[i], 500);
         else

@@ -45,6 +45,7 @@ void start_sound()
     if (!buzzer_init)
     {
         buzzer_start();
+        printf("********OPENED AUDIO BUFFER***********\n");
         buzzer_init = 1;
     }
 }
@@ -54,6 +55,7 @@ void stop_sound()
     if (buzzer_init)
     {
         buzzer_stop();
+        printf("********CLOSED AUDIO BUFFER***********\n");
         buzzer_init = 0;
     }
 }
