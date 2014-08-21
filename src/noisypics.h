@@ -40,6 +40,16 @@ int determine_scale(IplImage* source, struct imageNoteMap* map);
 int* generate_notes(CvScalar* colors, struct imageNoteMap* map, int numColors);
 
 /**
+* Filters note data so that no note can appear consecutively more than a certain amount of times
+* NOTE THAT NUMNOTES GETS SET TO THE PRUNED AMOUNT HERE
+* @param notes The note data to filter
+* @param numNotes The number of notes in the array
+* @param maxOccurences
+* @return The pruned array
+**/
+int* prune_notes(int* notes, int* numNotes, int maxOccurences);
+
+/**
 * Generate a unique series of tones based on a list of colors
 * @param colors The colors to use
 * @param map The note mapping information to use

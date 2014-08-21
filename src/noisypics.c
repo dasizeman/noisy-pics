@@ -19,18 +19,18 @@ int main(int argc, char** argv)
    
    int numblocks = blockcolumns*blockrows;
    CvScalar* colors = process_image(source,blockcolumns, blockrows, &map);
-  int scale = determine_scale(source, &map);
-  int* notes = generate_notes(colors, &map, numblocks);
+   int scale = determine_scale(source, &map);
+   int* notes = generate_notes(colors, &map, numblocks);
    
+   int* prunednotes = prune_notes(notes, &numblocks, 3);
    int i;
    for (i =0; i < numblocks; i++)
    {
-      // printf("%f,%f,%f\n", colors[i].val[0], colors[i].val[1], colors[i].val[2]);
       printf("%d ", notes[i]);
    }
    printf("\n");
    
-   play(notes, scale, numblocks);
+   play(prunednotes, scale, numblocks);
 }
 
 CvScalar* process_image(IplImage* source, int numColumns, int numRows, struct imageNoteMap* map)
@@ -84,6 +84,45 @@ int* generate_notes(CvScalar* colors, struct imageNoteMap* map, int numColors)
 
         res[i] = index;
     }
+    return res;
+}
+
+int* prune_notes(int* notes, int* numNotes, int maxOccurences)
+{
+    int current = notes[0];
+    int* res = (int*)malloc((*numNotes)*sizeof(int));
+    int count = 1;
+    int resindex = 0;
+    int i,j;
+
+    for (i =1; i < (*numNotes); i++)
+    {
+        if (notes[i] == current)
+            count++;
+        else
+        {
+            current = notes[i];
+            if (count > maxOccurences)
+            {
+                for (j = 0; j < maxOccurences; j++)
+                {
+                    res[resindex] = notes[i-1];
+                    resindex++;
+                }
+            }
+            else
+            {
+                for (j=0; j < count; j++)
+                {
+                    res[resindex] = notes[i-1];
+                    resindex++;
+                }
+            }
+            count = 1;
+        }
+
+    }
+    (*numNotes) = resindex+1;
     return res;
 }
 
