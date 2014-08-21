@@ -26,11 +26,17 @@ int main(int argc, char** argv)
    int i;
    for (i =0; i < numblocks; i++)
    {
-      printf("%d ", notes[i]);
+      printf("%d ", prunednotes[i]);
    }
    printf("\n");
    
+
+   cvNamedWindow("opencvtest",CV_WINDOW_AUTOSIZE);
+   cvShowImage("opencvtest",source);
+   cvWaitKey(0);
    play(prunednotes, scale, numblocks);
+   cvReleaseImage(&source);
+   
 }
 
 CvScalar* process_image(IplImage* source, int numColumns, int numRows, struct imageNoteMap* map)
@@ -47,6 +53,8 @@ CvScalar* process_image(IplImage* source, int numColumns, int numRows, struct im
     int lightmaxindex = findClosest(whiteScalar, res, numimages);
     map->light_min = colorDistance(blackScalar, res[lightminindex]);
     map->light_max = colorDistance(whiteScalar, res[lightmaxindex]);
+    printf("Found max lightness %f\n", map->light_max);
+    printf("Found min lightness %f\n", map->light_min);
 
     map->light_int = (map->light_max - map->light_min) / 15;
 
@@ -56,19 +64,29 @@ CvScalar* process_image(IplImage* source, int numColumns, int numRows, struct im
 
 int determine_scale(IplImage* source, struct imageNoteMap* map)
 {
-    double threshold = (map->light_max - map->light_min) / 2;
+    double threshold = 128.0;
     CvScalar overall_avg = cvAvg(source, NULL);
     CvScalar blackScalar = CV_RGB(0,0,0);
     double overall_lightness = colorDistance(blackScalar, overall_avg);
+    printf("Key lightness threshold %f\n", threshold);
+    printf("Got overall lightness value %f\n", overall_lightness);
 
     if (overall_lightness <= threshold)
+    {
+        printf("Using minor scale\n");
         return 0;
-     else return 1;
+    }
+    else
+    {
+        printf("Using major scale\n");
+        return 1;
+    }
 }
 
 int* generate_notes(CvScalar* colors, struct imageNoteMap* map, int numColors)
 {
-    int i, lightness, index;
+    int i, index;
+    double lightness;
     CvScalar blackScalar = CV_RGB(0,0,0);
 
     int* res = (int*)malloc(numColors*sizeof(int));
@@ -76,7 +94,7 @@ int* generate_notes(CvScalar* colors, struct imageNoteMap* map, int numColors)
     for (i = 0; i < numColors; i++)
     {
         lightness = colorDistance(blackScalar, colors[i]);
-        index = lightness / map->light_int;
+        index = (lightness / map->light_max) * 15;
         if (index < 1)
             index = 1;
         if (index > 15)
